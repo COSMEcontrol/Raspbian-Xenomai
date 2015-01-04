@@ -73,6 +73,9 @@ rm -rf data/linux-kernel
 rm -rf build/*
 mkdir data/linux-kernel
 
+echo "[*] Copiando kernel..."
+cp -r Raspbian/* data/linux-kernel
+
 echo "[*] Aplicando parches..."
 ./applyPatches.sh
 if [ "$?" != "0" ]; then
@@ -80,8 +83,7 @@ if [ "$?" != "0" ]; then
 else
 	echo "[+] Parches Xenomai aplicados correctamente"
 fi
-echo "[*] Copiando kernel..."
-cp -r Raspbian/* data/linux-kernel
+
 
 cd data/linux-kernel
 

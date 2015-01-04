@@ -1,0 +1,65 @@
+diff --git a/arch/arm/include/asm/ipipe_hwirq.h b/arch/arm/include/asm/ipipe_hwirq.h
+index 6b864aa..bd8cda1 100644
+--- a/arch/arm/include/asm/ipipe_hwirq.h
++++ b/arch/arm/include/asm/ipipe_hwirq.h
+@@ -200,9 +200,9 @@ static inline void hard_local_irq_restore(unsigned long x)
+ 		ipipe_unstall_root();			\
+ 	} while (0)
+ 
+-#define local_fiq_enable() ipipe_unstall_root()
++#define local_fiq_enable() hard_local_fiq_enable_notrace()
+ 
+-#define local_fiq_disable() ipipe_stall_root()
++#define local_fiq_disable() hard_local_fiq_disable_notrace()
+ 
+ #define arch_local_irq_restore(flags)			\
+ 	do {						\
+diff --git a/drivers/usb/host/dwc_common_port/dwc_common_linux.c b/drivers/usb/host/dwc_common_port/dwc_common_linux.c
+index 0812d3a..6955c6c 100644
+--- a/drivers/usb/host/dwc_common_port/dwc_common_linux.c
++++ b/drivers/usb/host/dwc_common_port/dwc_common_linux.c
+@@ -585,6 +585,7 @@ void DWC_MODIFY_REG32(uint32_t volatile *reg, uint32_t clear_mask, uint32_t set_
+ 	local_irq_save(flags);
+ 	local_fiq_disable();
+ 	writel((readl(reg) & ~clear_mask) | set_mask, reg);
++       local_fiq_enable();
+ 	local_irq_restore(flags);
+ }
+ 
+diff --git a/drivers/usb/host/dwc_otg/dwc_otg_cil_intr.c b/drivers/usb/host/dwc_otg/dwc_otg_cil_intr.c
+index b5a007d..cf54147 100644
+--- a/drivers/usb/host/dwc_otg/dwc_otg_cil_intr.c
++++ b/drivers/usb/host/dwc_otg/dwc_otg_cil_intr.c
+@@ -1354,6 +1354,7 @@ static inline uint32_t dwc_otg_read_common_intr(dwc_otg_core_if_t * core_if, gin
+ 		gintmsk.d32 |= gintmsk_common.d32;
+ 		gintsts_saved.d32 &= ~gintmsk_common.d32;
+ 		reenable_gintmsk->d32 = gintmsk.d32;
++               local_fiq_enable();
+ 		local_irq_restore(flags);
+ 	}
+ 
+diff --git a/drivers/usb/host/dwc_otg/dwc_otg_hcd_intr.c b/drivers/usb/host/dwc_otg/dwc_otg_hcd_intr.c
+index 7d521d9..cf8d2d9 100644
+--- a/drivers/usb/host/dwc_otg/dwc_otg_hcd_intr.c
++++ b/drivers/usb/host/dwc_otg/dwc_otg_hcd_intr.c
+@@ -97,6 +97,7 @@ void notrace _fiq_print(FIQDBG_T dbg_lvl, char *fmt, ...)
+ 		memcpy(buffer + wptr, text, 16);
+ 		wptr = (wptr + 16) % sizeof(buffer);
+ 	}
++       local_fiq_enable();
+ 	local_irq_restore(flags);
+ }
+ #endif
+@@ -742,8 +743,10 @@ int32_t dwc_otg_hcd_handle_sof_intr(dwc_otg_hcd_t * hcd)
+ 	}
+ 
+ 	/* Clear interrupt */
+-	//gintsts.b.sofintr = 1;
+-	//DWC_WRITE_REG32(&hcd->core_if->core_global_regs->gintsts, gintsts.d32);
++       if (!fiq_fix_enable) {
++               gintsts.b.sofintr = 1;
++               DWC_WRITE_REG32(&hcd->core_if->core_global_regs->gintsts, gintsts.d32);
++       }
+ 
+ 	return 1;
+ }
