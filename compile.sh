@@ -92,7 +92,7 @@ echo "[*] Limpiando kernel..."
 make mrproper
 
 
-mv rpi_xenomai_config.txt .config
+cp ../../rpi_xenomai_config.txt .config
 #ARCH=arm CROSS_COMPILE=${CCPREFIX} make -j $THREADS oldconfig
 
 echo "[*] Creando menuconfig..."
