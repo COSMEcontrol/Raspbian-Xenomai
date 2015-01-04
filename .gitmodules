@@ -2,3 +2,6 @@
 	path = Raspbian
 	url = https://github.com/raspberrypi/linux.git
 	branch = rpi-3.8.y
+[submodule "Xenomai-2.6"]
+	path = Xenomai-2.6
+	url = https://git.xenomai.org/xenomai-2.6.git
