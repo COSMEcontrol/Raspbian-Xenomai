@@ -1,0 +1,4 @@
+[submodule "Raspbian"]
+	path = Raspbian
+	url = https://github.com/raspberrypi/linux.git
+	branch = rpi-3.8.y
