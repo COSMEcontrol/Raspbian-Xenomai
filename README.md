@@ -13,9 +13,8 @@ Features
 * Enable/Disable Xenomai RT drivers
   
   ![Config RT](screenshots/raspbian_logo.png)
-  ![Config RT](screenshots/rt-config.jpg)
-  ![Config drivers](screenshots/drivers.jpg)
-
+  ![Config drivers](screenshots/xenomai-config.png)
+  ![Config RT](screenshots/config-drivers.png)
 
 Usage
 =====
