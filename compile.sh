@@ -3,7 +3,7 @@
 #### Alberto Azuara
 #### Versión 1.0
 #### 05/01/15
-#### Descarga y compilacion de kernel Raspbian aplicando los parches de Xenomai
+#### Download and compile Raspbian applying Xenomai patches
 #####################################################
 
 TOOLS_COMMIT="108317fde2ffb56d1dc7f14ac69c42f34a49342a"
@@ -13,23 +13,23 @@ DIR="$(pwd)"
 cd "$DIR"
 THREADS=$(($(cat /proc/cpuinfo | grep processor | wc -l) * 2))
 if [ `getconf LONG_BIT` == "64" ]; then
-	echo "[*] Maquina actual es 64-bit"
+	echo "[*] 64-bit Machine"
 	MACHINE_BITS="64"
 else
-	echo "[*] Maquina actual es 32-bit"
+	echo "[*] 32-bit Machine"
 	MACHINE_BITS="32"
 fi
 
 mkdir data/ > /dev/null 2>&1
 mkdir build/ > /dev/null 2>&1
 
-echo -n "[*] Comprobando utilidades de compilacion... "
-type make > /dev/null 2>&1 || { echo >&2 "[!] Instalar \"make\""; read -p "Press [Enter] to continue..."; exit 1; }
-type gcc > /dev/null 2>&1 || { echo >&2 "[!] Instalar \"gcc\""; read -p "Press [Enter] to continue..."; exit 1; }
-type g++ > /dev/null 2>&1 || { echo >&2 "[!] Instalar \"g++\""; read -p "Press [Enter] to continue..."; exit 1; }
+echo -n "[*] Checking utilities compilation ... "
+type make > /dev/null 2>&1 || { echo >&2 "[!] Install \"make\""; read -p "Press [Enter] to continue..."; exit 1; }
+type gcc > /dev/null 2>&1 || { echo >&2 "[!] Install \"gcc\""; read -p "Press [Enter] to continue..."; exit 1; }
+type g++ > /dev/null 2>&1 || { echo >&2 "[!] Install \"g++\""; read -p "Press [Enter] to continue..."; exit 1; }
 
 if [ "$(dpkg --get-selections | grep -w libncurses5-dev | grep -w install)" = "" ]; then
-	echo "[!] Instalar \"libncurses5-dev\""
+	echo "[!] Install \"libncurses5-dev\""
 	read -p "Press [Enter] to continue..."
 	exit 1
 fi
@@ -45,7 +45,7 @@ else
 fi
 
 if [ ! -f "${CCPREFIX}gcc" ]; then
-	echo -n "descargando cross-compile tools... "
+	echo -n "Download cross-compile tools... "
 	cd data
 	wget --no-check-certificate -q -O - "https://github.com/raspberrypi/tools/archive/$TOOLS_COMMIT.tar.gz" | tar -zx
 	cd ..
@@ -55,7 +55,7 @@ echo "ok! "
 
 set -e
 
-echo "[*] Actualizando/comprobando modulo Raspbian..."
+echo "[*] Updating / checking Raspbian module..."
 git submodule update --init --recursive
 
 echo -n "[*] Comprobando git... "
@@ -68,54 +68,54 @@ fi
 
 echo "ok!"
 
-echo "[*] Limpiando datos antiguos..."
+echo "[*] Cleaning old data..."
 rm -rf data/linux-kernel
 rm -rf build/*
 mkdir data/linux-kernel
 
-echo "[*] Copiando kernel..."
+echo "[*] Copy kernel..."
 cp -r Raspbian/* data/linux-kernel
 
-echo "[*] Aplicando parches..."
+echo "[*] Patching ..."
 ./applyPatches.sh
 if [ "$?" != "0" ]; then
-	echo "[!] Error al aplicar parches Xenomai"
+	echo "[!] Error patching"
 else
-	echo "[+] Parches Xenomai aplicados correctamente"
+	echo "[+]Xenomai patches applied correctly"
 fi
 
 
 cd data/linux-kernel
 
 echo "[*] Usando $THREADS hilos"
-echo "[*] Limpiando kernel..."
+echo "[*] Cleaning kernel..."
 make mrproper
 
 
 cp ../../rpi_xenomai_config.txt .config
 #ARCH=arm CROSS_COMPILE=${CCPREFIX} make -j $THREADS oldconfig
 
-echo "[*] Creando menuconfig..."
+echo "[*] Creating menuconfig ..."
 ARCH=arm CROSS_COMPILE=${CCPREFIX} make -j $THREADS menuconfig
 
-echo "[*] Compilando kernel..."
+echo "[*] Compiling kernel ..."
 ARCH=arm CROSS_COMPILE=${CCPREFIX} make bzImage -j $THREADS
 
 echo "[*] Compilando modulos..."
 ARCH=arm CROSS_COMPILE=${CCPREFIX} make -j $THREADS modules
 
-echo "[*] Instalando modulos de kernel..."
+echo "[*] Compiling modules ..."
 rm -rf ../modules
 mkdir ../modules
 ARCH=arm CROSS_COMPILE=${CCPREFIX} INSTALL_MOD_PATH=../modules/ make -j $THREADS modules_install
 
-echo "[*] Copiando imagen resultante..."
+echo "[*] Copying resulting image ..."
 cp arch/arm/boot/zImage ../../build/kernel.img
 
-echo "[*] Archivando modulos..."
+echo "[*] Archiving modules ..."
 cd ../modules
 tar -czf ../../build/modules.tar.gz .
 
-echo "[*] Listo!"
+echo "[*] Ready!"
 
 exit 0
