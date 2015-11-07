@@ -1,4 +1,4 @@
-RaspbianXenomai
+Raspbian-Xenomai
 =================
 Patch Raspbian OS with official Xenomai patches, compile and run into Raspberry Pi.
 
